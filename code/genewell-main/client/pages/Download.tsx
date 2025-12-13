@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Loader,
   ArrowLeft,
+  Eye,
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import LegalFooter from "@/components/LegalFooter";
@@ -45,17 +46,17 @@ export default function Download() {
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState("");
+  const [showInfo, setShowInfo] = useState(true);
 
   const quizData = JSON.parse(localStorage.getItem("quizData") || "{}");
+  const analysisId = localStorage.getItem("analysisId");
 
   // Get configuration from state or localStorage
   const [configuration, setConfiguration] = useState<PlanConfiguration | null>(
-    null,
+    null
   );
 
   useEffect(() => {
-    const currentAnalysisId = localStorage.getItem("analysisId");
-
     const stateConfig =
       location.state?.configuration || location.state?.planId
         ? {
@@ -71,36 +72,29 @@ export default function Download() {
 
     setConfiguration(stateConfig);
 
-    if (stateConfig && currentAnalysisId) {
+    if (stateConfig && analysisId) {
       generatePDF(stateConfig);
-    } else if (stateConfig && !currentAnalysisId) {
-      // Configuration exists but no analysis ID
-      setError(
-        "Please complete the quiz first to generate your personalized blueprint.",
-      );
-      setIsLoading(false);
     }
-  }, [location.state]);
+  }, [location.state, analysisId]);
 
   const generatePDF = async (config: PlanConfiguration) => {
     setIsLoading(true);
     setError("");
+    setShowInfo(true);
 
     try {
-      // Read analysisId fresh from localStorage to avoid stale values
       const freshAnalysisId = localStorage.getItem("analysisId");
       const savedQuizData = localStorage.getItem("quizData");
 
       if (!freshAnalysisId) {
         throw new Error(
-          "Analysis ID not found. Please complete the quiz first.",
+          "Analysis ID not found. Please complete the quiz first."
         );
       }
 
-      // Convert plan ID to tier name (remove "_blueprint" suffix)
       const planTier = config.planId.replace("_blueprint", "");
 
-      console.log("Generating PDF with config:", {
+      console.log("Generating PDF...", {
         freshAnalysisId,
         planTier,
         addOns: config.selectedAddOns,
@@ -120,20 +114,13 @@ export default function Download() {
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Purchase API error:", response.status, errorText);
-        try {
-          const errorData = JSON.parse(errorText);
-          throw new Error(
-            errorData.message || `Purchase failed: ${response.status}`,
-          );
-        } catch (e) {
-          throw new Error(
-            `Purchase failed: ${response.status} ${response.statusText}`,
-          );
-        }
+        throw new Error(
+          `PDF generation failed: ${response.status} ${response.statusText}`
+        );
       }
 
       const data = await response.json();
-      console.log("PDF generation successful:", data);
+      console.log("PDF generated successfully:", data);
 
       const plan = getProductByPlanId(config.planId);
       const addOnPages = config.selectedAddOns.reduce((sum, id) => {
@@ -149,7 +136,7 @@ export default function Download() {
         userName: quizData.userName || "User",
         generatedAt: new Date().toISOString(),
         expiresAt: new Date(
-          Date.now() + 30 * 24 * 60 * 60 * 1000,
+          Date.now() + 30 * 24 * 60 * 60 * 1000
         ).toISOString(),
         downloadUrl: data.downloadUrl,
         pageCount: totalPages,
@@ -176,10 +163,10 @@ export default function Download() {
         const errorText = await response.text();
         console.error(
           `Download failed: ${response.status} ${response.statusText}`,
-          errorText,
+          errorText
         );
         throw new Error(
-          `Download failed: ${response.status} ${response.statusText}`,
+          `Download failed: ${response.status} ${response.statusText}`
         );
       }
 
@@ -193,7 +180,7 @@ export default function Download() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `${quizData.userName || "blueprint"}_${pdfData.planTier}.pdf`;
+      link.download = `${(quizData.userName || "blueprint").replace(/\s+/g, "-")}_${pdfData.planTier}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -205,7 +192,7 @@ export default function Download() {
       setError(
         err instanceof Error
           ? `Download failed: ${err.message}`
-          : "Failed to download PDF",
+          : "Failed to download PDF"
       );
     } finally {
       setIsDownloading(false);
@@ -216,18 +203,12 @@ export default function Download() {
     if (!pdfData) return;
 
     try {
-      const response = await fetch(
-        `/api/wellness/download-pdf-base64/${pdfData.pdfRecordId}`,
-      );
+      const response = await fetch(pdfData.downloadUrl);
       if (!response.ok) throw new Error("Failed to load PDF");
 
-      const data = await response.json();
-      const newWindow = window.open();
-      if (newWindow) {
-        newWindow.document.write(
-          `<iframe src="${data.pdfUrl}" style="width:100%;height:100%;border:none;" />`,
-        );
-      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
     } catch (err) {
       console.error("View error:", err);
       setError("Failed to view PDF");
@@ -235,8 +216,6 @@ export default function Download() {
   };
 
   // Check for analysis ID before rendering
-  const analysisId = localStorage.getItem("analysisId");
-
   if (!analysisId && !configuration) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
@@ -271,11 +250,12 @@ export default function Download() {
         <Card className="w-full max-w-md text-center p-8">
           <Loader className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-spin" />
           <h2 className="text-xl font-bold text-slate-900 mb-2">
-            Generating Your Blueprint
+            Creating Your Personalized Blueprint
           </h2>
-          <p className="text-slate-600">
-            Personalizing your wellness plan with your quiz data...
+          <p className="text-slate-600 text-sm">
+            Generating your science-backed wellness plan with your name and personalized recommendations...
           </p>
+          <p className="text-xs text-slate-500 mt-4">This usually takes 5-15 seconds</p>
         </Card>
       </div>
     );
@@ -313,10 +293,10 @@ export default function Download() {
           <div className="text-center mb-8">
             <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
             <h1 className="text-4xl font-bold text-slate-900 mb-2">
-              Your Download is Ready, {quizData.userName || "User"}!
+              Your Blueprint is Ready, {quizData.userName || "User"}!
             </h1>
             <p className="text-xl text-slate-600">
-              Your personalized wellness blueprint has been generated
+              Your personalized wellness blueprint has been generated based on your responses
             </p>
           </div>
 
@@ -335,7 +315,7 @@ export default function Download() {
               <CardHeader>
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription>
-                  Complete · {pdfData?.pageCount || plan.pageCount} pages
+                  {pdfData?.pageCount || plan.pageCount} pages • Personalized for {quizData.userName || "you"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -410,7 +390,7 @@ export default function Download() {
           {pdfData && (
             <Card className="mb-6 border-2 border-blue-500">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50">
-                <CardTitle>Download Your Blueprint</CardTitle>
+                <CardTitle>Download Your Personalized Blueprint</CardTitle>
               </CardHeader>
               <CardContent className="p-6">
                 <div className="space-y-3">
@@ -439,7 +419,7 @@ export default function Download() {
                     size="lg"
                     className="w-full py-6 text-base"
                   >
-                    <FileText className="mr-2 h-5 w-5" />
+                    <Eye className="mr-2 h-5 w-5" />
                     View Online
                   </Button>
                 </div>
@@ -467,8 +447,7 @@ export default function Download() {
                     Download your blueprint
                   </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Save the PDF to your device. It includes everything
-                    personalized to your profile.
+                    Save the PDF to your device. It includes everything personalized to your profile with your name on the cover.
                   </p>
                 </div>
               </div>
@@ -480,8 +459,7 @@ export default function Download() {
                     Review and understand your plan
                   </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Read through your personalized recommendations. They're
-                    based on your quiz answers and science-backed research.
+                    Read through your personalized recommendations. Every recommendation is backed by 2024 peer-reviewed research and written for daily action.
                   </p>
                 </div>
               </div>
@@ -493,8 +471,7 @@ export default function Download() {
                     Start implementing
                   </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Begin with the simple actions in Week 1. Consistency beats
-                    perfection.
+                    Begin with Week 1 actions. Consistency beats perfection. Small daily steps create lasting transformation.
                   </p>
                 </div>
               </div>
@@ -506,8 +483,7 @@ export default function Download() {
                     Track and adjust
                   </h4>
                   <p className="text-sm text-slate-600 mt-1">
-                    Use the tracking tools in your blueprint. After 4 weeks,
-                    reassess and adjust based on what's working.
+                    Use the tracking tools in your blueprint. After 4 weeks, reassess and adjust based on what's working.
                   </p>
                 </div>
               </div>
