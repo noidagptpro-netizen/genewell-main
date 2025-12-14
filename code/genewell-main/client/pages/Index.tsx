@@ -158,6 +158,15 @@ export default function Index() {
                 <Play className="mr-3 h-5 w-5" />
                 Watch How It Works
               </Button>
+
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-orange-200 text-orange-700 hover:bg-orange-50 px-8 py-6 text-lg rounded-full"
+              >
+                <Download className="mr-3 h-5 w-5" />
+                See Sample Report
+              </Button>
             </div>
 
             {/* Trust Indicators */}
