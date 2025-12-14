@@ -158,6 +158,7 @@ export const handleWellnessPurchase: RequestHandler = async (req, res) => {
       addOns,
       orderId: order.orderId,
       timestamp: new Date().toISOString(),
+      language: (language || "en") as "en" | "hi",
     });
 
     // Store PDF file
