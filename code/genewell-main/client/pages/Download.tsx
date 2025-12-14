@@ -100,6 +100,8 @@ export default function Download() {
         addOns: config.selectedAddOns,
       });
 
+      const language = localStorage.getItem("language") || "en";
+
       const response = await fetch("/api/wellness/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,6 +110,7 @@ export default function Download() {
           planTier,
           addOns: config.selectedAddOns,
           quizData: savedQuizData ? JSON.parse(savedQuizData) : undefined,
+          language,
         }),
       });
 
