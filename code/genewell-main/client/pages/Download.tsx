@@ -279,9 +279,14 @@ export default function Download() {
               </div>
               <span className="font-bold text-lg text-blue-900">Genewell</span>
             </Link>
-            <Button variant="ghost" size="sm" onClick={() => navigate("/quiz")}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Take Another Quiz
-            </Button>
+            <div className="flex items-center space-x-2">
+              <Button variant="outline" size="sm" onClick={() => navigate("/pricing")}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Plans
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate("/quiz")}>
+                <ArrowLeft className="mr-2 h-4 w-4" /> Take Another Quiz
+              </Button>
+            </div>
           </div>
         </div>
       </header>
