@@ -26,7 +26,7 @@ export async function generatePersonalizedPDF(
   options: PDFGenerationOptions,
 ): Promise<PDFChunks> {
   const { profile, insights } = personalizationData;
-  const { tier, addOns = [], orderId, timestamp } = options;
+  const { tier, addOns = [], orderId, timestamp, language = "en" } = options;
 
   const doc = new PDFDocument({
     size: "A4",
