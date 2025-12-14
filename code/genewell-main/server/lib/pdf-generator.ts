@@ -45,6 +45,13 @@ export async function generatePersonalizedPDF(
   let currentPage = 0;
   doc.on("pageAdded", () => {
     currentPage++;
+    // Add user name header on every page (except cover page 0)
+    if (currentPage > 0) {
+      const pageHeight = doc.page.height;
+      doc.fontSize(9).font("Helvetica").fillColor("#999999");
+      doc.text(`${profile.name} • Wellness Blueprint`, 40, pageHeight - 30);
+      doc.text(`Page ${currentPage}`, doc.page.width - 80, pageHeight - 30);
+    }
   });
 
   // Helper functions
