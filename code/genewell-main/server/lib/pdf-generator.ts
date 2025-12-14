@@ -131,8 +131,82 @@ export async function generatePersonalizedPDF(
 
   doc.addPage();
 
-  // === PAGE 1: EXECUTIVE SUMMARY ===
-  addHeaderSection("Executive Summary", `Your Personalized Wellness Analysis`);
+  // === PAGE 1: YOUR TOP ACTIONS (QUICK START) ===
+  doc
+    .fontSize(24)
+    .font("Helvetica-Bold")
+    .fillColor("#2d3748")
+    .text(`${profile.name}'s Top 3 Actions This Week`);
+
+  doc
+    .fontSize(12)
+    .font("Helvetica")
+    .fillColor("#718096")
+    .text("Start here—these three changes will have the biggest impact on your energy and results");
+
+  doc
+    .moveTo(40, doc.y)
+    .lineTo(doc.page.width - 40, doc.y)
+    .stroke("#e5e7eb");
+  doc.moveDown(0.8);
+
+  // Action 1
+  doc
+    .fontSize(14)
+    .font("Helvetica-Bold")
+    .fillColor("#7c3aed")
+    .text("1. Lock Your Wake Time");
+  doc
+    .fontSize(10)
+    .font("Helvetica")
+    .fillColor("#111827")
+    .text(
+      `Wake at ${insights.recommendedMealTimes[0]?.split(" ")[0] || "7:00"} AM every day (including weekends) for 30 days. This single action resets your circadian rhythm and improves sleep quality within days.`
+    );
+  doc.moveDown(0.3);
+
+  // Action 2
+  doc
+    .fontSize(14)
+    .font("Helvetica-Bold")
+    .fillColor("#7c3aed")
+    .text("2. Eat Within a 10–12 Hour Window");
+  doc
+    .fontSize(10)
+    .font("Helvetica")
+    .fillColor("#111827")
+    .text(
+      `Breakfast: ${insights.recommendedMealTimes[0]} | Dinner: ${insights.recommendedMealTimes[2]} | Stop eating after ${insights.recommendedMealTimes[2]}. This simple timing synchronizes your metabolism and digestion.`
+    );
+  doc.moveDown(0.3);
+
+  // Action 3
+  doc
+    .fontSize(14)
+    .font("Helvetica-Bold")
+    .fillColor("#7c3aed")
+    .text("3. Move for 20–30 Minutes, 3x This Week");
+  doc
+    .fontSize(10)
+    .font("Helvetica")
+    .fillColor("#111827")
+    .text(
+      `Any movement counts: walk, yoga, gym, dancing. Research shows this alone reduces stress by 40%, increases energy, and improves sleep. Start with what feels easy.`
+    );
+
+  doc.moveDown(1);
+  doc
+    .fontSize(11)
+    .font("Helvetica")
+    .fillColor("#6b7280")
+    .text(
+      `💡 Pro Tip: These three actions work together. Lock your wake time first (it sets everything else). Add meal timing in week 2. Add movement in week 3. Small steps, big results.`
+    );
+
+  doc.addPage();
+
+  // === PAGE 2: EXECUTIVE SUMMARY ===
+  addHeaderSection("Executive Summary", `${profile.name}'s Personalized Wellness Analysis`);
 
   doc.moveDown(0.3);
   doc.fontSize(11).font("Helvetica").fillColor("#111827");
