@@ -12,6 +12,7 @@ export interface PDFGenerationOptions {
   addOns?: string[];
   orderId: string;
   timestamp: string;
+  language?: "en" | "hi";
 }
 
 interface PDFChunks {
