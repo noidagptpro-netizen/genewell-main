@@ -554,7 +554,8 @@ export default function Quiz() {
 
       localStorage.setItem("analysisId", data.analysisId);
       localStorage.setItem("blueprint", JSON.stringify(data.blueprint));
-      localStorage.setItem("quizData", JSON.stringify({ ...finalQuizData, userName, userEmail }));
+      localStorage.setItem("language", language);
+      localStorage.setItem("quizData", JSON.stringify({ ...finalQuizData, userName, userEmail, language }));
       navigate("/quiz-results");
     } catch (err) {
       console.error("Quiz error:", err);
